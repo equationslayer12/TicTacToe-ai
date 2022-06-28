@@ -1,10 +1,9 @@
 
 # TicTacToe-ai
 
+my first git project :)
+
 A tic tac toe game vs AI using the minmax algorithm
-
-
-**This project has been written for practicing C and learning Git**
 
 ## The MinMax Algorithm
 
