@@ -4,7 +4,7 @@
 A tic tac toe game vs AI using the minmax algorithm
 
 
-**This project has been written for practicing C and learning Git, I do not suggest learning too much from it.**
+**This project has been written for practicing C and learning Git**
 
 ## The MinMax Algorithm
 
