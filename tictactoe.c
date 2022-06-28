@@ -29,6 +29,7 @@ int GetGameStatusForRows();
 int GetGameStatusForColumns();
 
 void ChangeTurn();
+void PrintEndGameMessage(int status);
 
 int g_board[3][3];
 int g_currentTurn = O;
@@ -45,16 +46,8 @@ int main(int argc, char const *argv[])
         status = GetGameStatus();
         ChangeTurn();
     }
-
-    PrintBoard();
-    printf("GG!\n");
-    if (status == DRAW) {
-        printf("Draw!");
-    }
-    else {
-        PrintSymbol(status);
-        printf(" won!");
-    }
+    
+    PrintEndGameMessage(status);
     return 0;
 }
 
@@ -223,5 +216,16 @@ void ChangeTurn() {
     }
 }
 
+void PrintEndGameMessage(int status) {
+    PrintBoard();
+    printf("GG!\n");
+    if (status == DRAW) {
+        printf("Draw!");
+    }
+    else {
+        PrintSymbol(status);
+        printf(" won!");
+    }
+}
 
 
