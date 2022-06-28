@@ -5,6 +5,9 @@
 #define X -1
 #define O 1
 #define BLANK 0
+#define BOARDLINESEPERATORSIZE (4 * (SIZE - 1) + 1)
+#define GAMEISRUNNING 0
+#define DRAW 10
 
 typedef struct {
     int x;
@@ -21,24 +24,37 @@ Move AskForMove();
 int IsBetweenBoardRange(int integer);
 int IsMoveValid(Move *move);
 void MakeMove(Move Move);
+int GetGameStatus();
+int GetGameStatusForRows();
+int GetGameStatusForColumns();
+
 void ChangeTurn();
 
 int g_board[3][3];
 int g_currentTurn = O;
 
-int BOARDLINESEPERATORSIZE = 4 * (SIZE - 1) + 1;
 
 int main(int argc, char const *argv[])
 {
     InitBoard();
 
-    int gameIsRunning = 1;
-    while (gameIsRunning) {
+    int status = GAMEISRUNNING;
+    while (status == GAMEISRUNNING) {
         Move move = AskForMove();
         MakeMove(move);
+        status = GetGameStatus();
         ChangeTurn();
     }
 
+    PrintBoard();
+    printf("GG!\n");
+    if (status == DRAW) {
+        printf("Draw!");
+    }
+    else {
+        PrintSymbol(status);
+        printf(" won!");
+    }
     return 0;
 }
 
@@ -145,6 +161,57 @@ int IsMoveValid(Move *move) {
 
 void MakeMove(Move move) {
     g_board[move.y][move.x] = g_currentTurn;
+}
+
+int GetGameStatus() {
+    int status;
+
+    status = GetGameStatusForRows();
+    if (status != GAMEISRUNNING) {
+        return status;
+    }
+
+    status = GetGameStatusForColumns();
+    if (status != GAMEISRUNNING) {
+        return status;
+    }
+
+
+    return GAMEISRUNNING;
+};
+
+int GetGameStatusForRows() {
+    for (size_t y = 0; y < SIZE; y++) {
+        int lastElement = g_board[y][0];
+        for (size_t x = 0; x < SIZE; x++) {
+            if (lastElement != g_board[y][x] || g_board[y][x] == BLANK) {
+                break;
+            }
+            lastElement = g_board[y][x];
+
+            if (x == SIZE - 1) {
+                return g_board[y][x];
+            }
+        }
+    }
+    return GAMEISRUNNING;
+}
+
+int GetGameStatusForColumns() {
+    for (size_t x = 0; x < SIZE; x++) {
+        int lastElement = g_board[0][x];
+        for (size_t y = 0; y < SIZE; y++) {
+            if (lastElement != g_board[y][x] || g_board[y][x] == BLANK) {
+                break;
+            }
+            lastElement = g_board[y][x];
+
+            if (y == SIZE - 1) {
+                return g_board[y][x];
+            }
+        }
+    }
+    return GAMEISRUNNING;
 }
 
 void ChangeTurn() {
