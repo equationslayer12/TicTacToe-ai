@@ -9,7 +9,14 @@ int main(int argc, char const *argv[])
 
     int status = GAMEISRUNNING;
     while (status == GAMEISRUNNING) {
-        Move move = AskForMove();
+        Move move;
+        if (g_currentTurn == PLAYERTURN) {
+            move = AskForMove();
+        }
+        else {
+            move = GetBestMove();
+        }
+
         MakeMove(move);
         status = GetGameStatus();
         ChangeTurn();
@@ -17,6 +24,49 @@ int main(int argc, char const *argv[])
     
     PrintEndGameMessage(status);
     return 0;
+}
+
+/* minmax! */
+Move GetBestMove() {
+
+    int status = GetGameStatus();
+    if (status != GAMEISRUNNING) {
+        return (Move) {0, 0, EvalateGameStatus(status)};
+
+    }
+    
+    Move bestMove = {0, 0, -10000};
+
+    // loop through each one of the empty moves
+    for (size_t y = 0; y < SIZE; y++) {
+        for (size_t x = 0; x < SIZE; x++) {
+            if (g_board[y][x] == BLANK) {
+                Move move = {x, y, 0};
+
+                MakeMove(move);
+                ChangeTurn();
+                move.eval = -(GetBestMove().eval);   // that negative sign is very important
+                UnMakeMove(move);
+                ChangeTurn();
+
+                if (move.eval > bestMove.eval) {
+                    bestMove = move;
+                }
+            }
+        }
+    }
+    return bestMove;
+}
+
+int EvalateGameStatus(int status) {
+    if (status == GAMEISRUNNING)
+        return 0;
+    if (status == DRAW)
+        return -1;
+    if (status == g_currentTurn)
+        return 10;
+    else
+        return -10;
 }
 
 void InitBoard() {
@@ -124,6 +174,10 @@ void MakeMove(Move move) {
     g_board[move.y][move.x] = g_currentTurn;
 }
 
+void UnMakeMove(Move move) {
+    g_board[move.y][move.x] = BLANK;
+}
+
 int GetGameStatus() {
     int status;
 
@@ -137,6 +191,14 @@ int GetGameStatus() {
         return status;
     }
 
+    status = GetGameStatusForZigZags();
+    if (status != GAMEISRUNNING) {
+        return status;
+    }
+
+    if (isGameStatusDraw()) {
+        return DRAW;
+    }
 
     return GAMEISRUNNING;
 };
@@ -173,6 +235,48 @@ int GetGameStatusForColumns() {
         }
     }
     return GAMEISRUNNING;
+}
+
+int GetGameStatusForZigZags() {
+
+    // check for \
+    //
+    int lastElement = g_board[0][0];
+    int x = 1, y = 1;
+    for (; y < SIZE; y++, x++) {
+        if (lastElement != g_board[y][x] || g_board[y][x] == BLANK) {
+            break;
+        }
+        if (y == SIZE - 1) {
+            return g_board[y][x];
+        }
+    }
+    
+    // check for /
+    // 
+    lastElement = g_board[0][SIZE-1];
+    x = SIZE - 1, y = 0;
+    for (; y < SIZE; y++, x--) {
+        if (lastElement != g_board[y][x] || g_board[y][x] == BLANK) {
+            break;
+        }
+        if (y == SIZE - 1) {
+            return g_board[y][x];
+        }
+    }
+
+    return GAMEISRUNNING;
+}
+
+int isGameStatusDraw() {
+    for (size_t y = 0; y < SIZE; y++) {
+        for (size_t x = 0; x < SIZE; x++) {
+            if (g_board[y][x] == BLANK) {
+                return 0;
+            }
+        }
+    }
+    return 1;
 }
 
 void ChangeTurn() {
